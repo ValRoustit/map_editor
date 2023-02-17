@@ -1,6 +1,6 @@
 export type Draw = (context: CanvasRenderingContext2D) => void;
 
-export function preDraw(context: CanvasRenderingContext2D) {
+export function clearCanvas(context: CanvasRenderingContext2D) {
   const height = context.canvas.height;
   const width = context.canvas.width;
 
@@ -59,7 +59,7 @@ export function hexGrid(context: CanvasRenderingContext2D, radius: number) {
     y: 0,
   };
 
-  preDraw(context);
+  clearCanvas(context);
 
   for (let j = -rowOffset; j <= nbRows - rowOffset; j++) {
     for (let i = -colOffset; i <= nbColumns - colOffset; i++) {

@@ -1,90 +1,75 @@
-import { useCallback, useEffect, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { hexGrid } from "./draw_utils";
-import useAnimationFrame from "../hooks/useAnimationFrame";
 import useThrottleRAF from "../hooks/useThrottleRAF";
-
-// export interface CanvasProps extends HTMLProps<HTMLCanvasElement> {
-//   draw: Draw;
-// }
+import usePanZoom from "../hooks/usePanZoom";
+import useMoveCanvas from "../hooks/useMoveCanvas";
 
 export default function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const grab = useRef(false);
-  const mouseX = useRef(0);
-  const mouseY = useRef(0);
-  const zoom = useRef(1);
 
-  const drawGrid = useCallback((context: CanvasRenderingContext2D) => {
+  const drawGrid = () => {
+    const context = canvasRef.current?.getContext("2d")!;
     hexGrid(context, 100);
-  }, []);
+  };
 
-  const throttledGridRender = useThrottleRAF(
-    () => drawGrid(canvasRef.current?.getContext("2d")!),
-    120
+  const { handleWheelZoom } = usePanZoom(canvasRef, drawGrid);
+  const { handleGrab, handleMove, handleRelease } = useMoveCanvas(
+    canvasRef,
+    drawGrid
   );
 
-  const setAnimate = useAnimationFrame(() =>
-    drawGrid(canvasRef.current?.getContext("2d")!)
-  );
+  const throttledGridRender = useThrottleRAF(drawGrid, 120);
 
   useEffect(() => {
-    const ctx = canvasRef.current?.getContext("2d")!;
-    const id = requestAnimationFrame(() => drawGrid(ctx));
+    if (canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      canvasRef.current.width = rect.width;
+      canvasRef.current.height = rect.height;
+    }
+    const id = requestAnimationFrame(drawGrid);
 
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    const context = canvasRef.current?.getContext("2d")!;
-    const transform = context.getTransform();
-    const rect = canvasRef.current?.getBoundingClientRect()!;
+  useLayoutEffect(() => {
+    function handleResize() {
+      if (!canvasRef.current) return;
+      let context = canvasRef.current.getContext("2d");
+      const transform = context?.getTransform();
+      const rect = canvasRef.current.getBoundingClientRect();
+      canvasRef.current.width = rect.width;
+      canvasRef.current.height = rect.height;
+      context = canvasRef.current.getContext("2d");
+      context?.setTransform(transform);
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+      throttledGridRender();
+    }
 
-    const step = (10 / 100) * Math.sign(e.deltaY);
-    zoom.current = transform.a * (1 + step);
-    transform.a = zoom.current;
-    transform.d = zoom.current;
+    window.addEventListener("resize", handleResize);
 
-    const dx = (x - transform.e) * step;
-    const dy = (y - transform.f) * step;
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
-    transform.e -= dx;
-    transform.f -= dy;
-
-    context.setTransform(transform);
-
-    throttledGridRender();
-  };
-
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    grab.current = true;
-    setAnimate(true);
-    mouseX.current = e.clientX;
-    mouseY.current = e.clientY;
-  };
-
-  const handleMouseStop = () => {
-    grab.current = false;
-    setAnimate(false);
-  };
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      handleGrab(e);
+    },
+    [handleGrab]
+  );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!grab.current) return;
-
-      const context = canvasRef.current?.getContext("2d")!;
-
-      const dx = (mouseX.current - e.clientX) / zoom.current;
-      const dy = (mouseY.current - e.clientY) / zoom.current;
-
-      context.translate(-dx, -dy);
-
-      mouseX.current = e.clientX;
-      mouseY.current = e.clientY;
+      handleMove(e);
     },
-    []
+    [handleMove]
   );
 
   return (
@@ -93,10 +78,10 @@ export default function Canvas() {
       width="800"
       height="500"
       onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseStop}
+      onMouseUp={handleRelease}
       onMouseMove={handleMouseMove}
-      onMouseOut={handleMouseStop}
-      onWheel={handleWheel}
+      onMouseOut={handleRelease}
+      onWheel={handleWheelZoom}
     />
   );
 }
