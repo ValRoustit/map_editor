@@ -1,16 +1,28 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { hexGrid } from "./draw_utils";
+import { hexGrid, Pen } from "../utils/draw_utils";
 import useThrottleRAF from "../hooks/useThrottleRAF";
 import usePanZoom from "../hooks/usePanZoom";
 import useMoveCanvas from "../hooks/useMoveCanvas";
+import { useMapContext } from "../context/MapContext";
+
+const pen0: Pen = {
+  active: false,
+  x: 0,
+  y: 0,
+  value: "green",
+  radius: 1,
+};
 
 export default function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pen = useRef(pen0);
 
-  const drawGrid = () => {
+  const { state, updateMap } = useMapContext();
+
+  const drawGrid = useCallback(() => {
     const context = canvasRef.current?.getContext("2d")!;
-    hexGrid(context, 100);
-  };
+    hexGrid(context, pen.current.x, pen.current.y);
+  }, [pen, state]);
 
   const { handleWheelZoom } = usePanZoom(canvasRef, drawGrid);
   const { handleGrab, handleMove, handleRelease } = useMoveCanvas(
@@ -39,8 +51,9 @@ export default function Canvas() {
       if (!canvasRef.current) return;
       let context = canvasRef.current.getContext("2d");
       const transform = context?.getTransform();
-      canvasRef.current.width = document.body.clientWidth;
-      canvasRef.current.height = document.body.clientHeight;
+      const rect = canvasRef.current.getBoundingClientRect();
+      canvasRef.current.width = rect.width;
+      canvasRef.current.height = rect.height;
       context = canvasRef.current.getContext("2d");
       context?.setTransform(transform);
 
@@ -57,6 +70,8 @@ export default function Canvas() {
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       handleGrab(e);
+      console.log(e.button);
+      if (e.button === 0) pen.current.active = true;
     },
     [handleGrab]
   );
@@ -64,6 +79,11 @@ export default function Canvas() {
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       handleMove(e);
+      if (pen.current.active) {
+        pen.current.x = e.clientX;
+        pen.current.y = e.clientY;
+        throttledGridRender();
+      }
     },
     [handleMove]
   );

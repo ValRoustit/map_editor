@@ -1,11 +1,14 @@
 import "./App.css";
 import Canvas from "./components/Canvas";
+import { MapContextProvider } from "./context/MapContext";
 
 function App() {
   return (
-    <div className="App">
-      <Canvas />
-    </div>
+    <MapContextProvider>
+      <div className="App">
+        <Canvas />
+      </div>
+    </MapContextProvider>
   );
 }
 

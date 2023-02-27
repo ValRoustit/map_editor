@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useAnimationFrame from "./useAnimationFrame";
 import useDebounceCb from "./useDebounceCb";
 
@@ -16,9 +16,10 @@ export default function useMoveCanvas(
   const setAnimate = useAnimationFrame(drawCanvas);
 
   const setAnimateDebounced = useDebounceCb(setAnimate);
+  const setOffsetDebounced = useDebounceCb(setOffset);
 
   const handleGrab = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    setGrab(true);
+    if (e.button === 2) setGrab(true);
     mousePos.current.x = e.clientX;
     mousePos.current.y = e.clientY;
   }, []);
@@ -39,15 +40,23 @@ export default function useMoveCanvas(
       mousePos.current.x = e.clientX;
       mousePos.current.y = e.clientY;
 
-      setOffset({ x: dx, y: dy }); // deboumce later
+      setOffsetDebounced({ x: dx, y: dy }); // deboumce later
       setAnimateDebounced(false);
     },
-    [grab, setAnimate, setAnimateDebounced]
+    [grab, setOffsetDebounced, setAnimate, setAnimateDebounced]
   );
 
   const handleRelease = useCallback(() => {
     setGrab(false);
   }, [setGrab]);
+
+  useEffect(() => {
+    const cb = (e: MouseEvent) => e.preventDefault();
+    window.addEventListener("contextmenu", cb); // remove rightClick menu
+    return () => {
+      window.removeEventListener("contextmenu", cb);
+    };
+  }, []);
 
   return {
     offSet,
