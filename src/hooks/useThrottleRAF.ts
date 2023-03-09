@@ -1,6 +1,6 @@
 import { useRef, useEffect, useMemo } from "react";
 
-export default function useThrottleRAF(cb: () => void, fps: number = 60) {
+export default function useThrottleRAF(cb: () => void, fps = 60) {
   const cbRef = useRef(cb);
   const frameRef = useRef(0);
 

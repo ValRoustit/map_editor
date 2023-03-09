@@ -1,11 +1,11 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --primary-color: rgb(254, 254, 255);
+  --secondary-color: rgb(1, 49, 83);
+  --tertiary-color: rgb(163, 168, 202);
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --outline-color: rgb(250, 95, 95);
+
+  color: var(--secondary-color);
 }
 
 * {
@@ -14,7 +14,6 @@
   box-sizing: border-box;
 
   font-family: "Varela Round", sans-serif;
-  color: black;
 }
 
 html {
@@ -29,4 +28,8 @@ body {
 #root {
   width: 100%;
   height: 100%;
+}
+
+.react-icons {
+  vertical-align: middle;
 }

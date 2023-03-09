@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback } from "react";
 
 export default function useDebounceCb(
   cb: (...args: any[]) => void,
-  wait: number = 500
+  wait = 500
 ) {
   const cbRef = useRef(cb);
   const timeoutRef = useRef<number | undefined>(undefined);

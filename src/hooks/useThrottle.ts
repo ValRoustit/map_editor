@@ -1,6 +1,6 @@
 import { useRef, useEffect, useMemo } from "react";
 
-export default function useThrottle(cb: () => void, wait: number = 500) {
+export default function useThrottle(cb: () => void, wait = 500) {
   const cbRef = useRef(cb);
 
   useEffect(() => {

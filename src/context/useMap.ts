@@ -1,13 +1,14 @@
 import { useCallback, useReducer } from "react";
+import { HexCube } from "../utils/hex_utils";
 
-export type MapType = Map<{ x: number; y: number }, string>;
+export type MapType = Map<string, string>;
 
 export type StateType = {
   map: MapType;
 };
 
 export const initState: StateType = {
-  map: new Map(),
+  map: new Map() as MapType,
 };
 
 export const enum REDUCER_ACTION_TYPE {
@@ -22,7 +23,7 @@ export type ReducerAction = {
 function reducer(state: StateType, action: ReducerAction): StateType {
   switch (action.type) {
     case REDUCER_ACTION_TYPE.UPDATE_MAP:
-      return { ...state, map: action.payload! };
+      return { ...state, map: action.payload as MapType };
     default:
       throw new Error();
   }

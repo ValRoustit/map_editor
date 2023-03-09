@@ -1,39 +1,48 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { hexGrid, Pen } from "../utils/draw_utils";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { drawMap, hexGrid, SIZE } from "../utils/draw_utils";
 import useThrottleRAF from "../hooks/useThrottleRAF";
 import usePanZoom from "../hooks/usePanZoom";
 import useMoveCanvas from "../hooks/useMoveCanvas";
+import { flatTop, Point } from "../utils/hex_utils";
+import { Tool } from "./Toolbar";
 import { useMapContext } from "../context/MapContext";
+import { useTools } from "../hooks/useTools";
+import { MapType } from "../context/useMap";
 
-const pen0: Pen = {
-  active: false,
-  x: 0,
-  y: 0,
-  value: "green",
-  radius: 1,
-};
+const MAP: MapType = new Map();
+MAP.set(JSON.stringify({ q: 10, r: 10, s: 3 }), "blue");
 
-export default function Canvas() {
+export interface CanvasProps {
+  tool: Tool;
+}
+
+function Canvas({ tool }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const pen = useRef(pen0);
 
-  const { state, updateMap } = useMapContext();
+  const { state } = useMapContext();
 
-  const drawGrid = useCallback(() => {
-    const context = canvasRef.current?.getContext("2d")!;
-    hexGrid(context, pen.current.x, pen.current.y);
-  }, [pen, state]);
+  const { handleGrab, handleMove, handleRelease } = useMoveCanvas(canvasRef);
+  const { handleZoom, zoom } = usePanZoom(canvasRef);
+  const { brush, handleBrush } = useTools(canvasRef, zoom);
 
-  const { handleWheelZoom } = usePanZoom(canvasRef, drawGrid);
-  const { handleGrab, handleMove, handleRelease } = useMoveCanvas(
-    canvasRef,
-    drawGrid
-  );
-  useEffect(() => {
-    console.log("MountedCanva");
-  }, []);
+  const renderGrid = useCallback(() => {
+    const radius = SIZE * zoom.current;
+    const context = canvasRef.current?.getContext(
+      "2d"
+    ) as CanvasRenderingContext2D;
+    hexGrid(context, radius);
+    drawMap(context, MAP, flatTop, SIZE * zoom.current);
+    const brushMap = brush.current as MapType;
+    drawMap(context, brushMap, flatTop, SIZE * zoom.current);
+  }, [brush, zoom]);
 
-  const throttledGridRender = useThrottleRAF(drawGrid, 120);
+  const throttledRenderGrid = useThrottleRAF(renderGrid, 120); //remplace with animate
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -41,10 +50,11 @@ export default function Canvas() {
       canvasRef.current.width = rect.width;
       canvasRef.current.height = rect.height;
     }
-    const id = requestAnimationFrame(drawGrid);
+    const id = requestAnimationFrame(renderGrid);
 
     return () => cancelAnimationFrame(id);
-  }, []);
+    // should render only on mount
+  }, [renderGrid]);
 
   useLayoutEffect(() => {
     function handleResize() {
@@ -57,7 +67,7 @@ export default function Canvas() {
       context = canvasRef.current.getContext("2d");
       context?.setTransform(transform);
 
-      throttledGridRender();
+      throttledRenderGrid();
     }
 
     window.addEventListener("resize", handleResize);
@@ -65,13 +75,11 @@ export default function Canvas() {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [throttledRenderGrid]);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       handleGrab(e);
-      console.log(e.button);
-      if (e.button === 0) pen.current.active = true;
     },
     [handleGrab]
   );
@@ -79,14 +87,23 @@ export default function Canvas() {
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       handleMove(e);
-      if (pen.current.active) {
-        pen.current.x = e.clientX;
-        pen.current.y = e.clientY;
-        throttledGridRender();
-      }
+      throttledRenderGrid();
+      handleBrush(e);
     },
-    [handleMove]
+    [handleBrush, handleMove, throttledRenderGrid]
   );
+
+  const handleWheel = useCallback(
+    (e: React.WheelEvent<HTMLCanvasElement>) => {
+      handleZoom(e);
+      throttledRenderGrid();
+    },
+    [handleZoom, throttledRenderGrid]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    handleRelease();
+  }, [handleRelease]);
 
   return (
     <canvas
@@ -94,10 +111,12 @@ export default function Canvas() {
       width="800"
       height="500"
       onMouseDown={handleMouseDown}
-      onMouseUp={handleRelease}
+      onMouseUp={handleMouseLeave}
       onMouseMove={handleMouseMove}
-      onMouseOut={handleRelease}
-      onWheel={handleWheelZoom}
+      onMouseOut={handleMouseLeave}
+      onWheel={handleWheel}
     />
   );
 }
+
+export default Canvas;

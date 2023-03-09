@@ -44,7 +44,7 @@ export const flatTop: Orientation = {
 
 export type Layout = {
   orientation: Orientation;
-  size: number; // orthogonal grid
+  size: number; // hex radius
   origin: Point;
 };
 
@@ -202,24 +202,35 @@ export function roffset_to_cube(offset: number, h: HexOffset) {
   return Hex(q, r, s);
 }
 
-export function hex_to_pixel(layout: Layout, h: HexCube) {
-  const M = layout.orientation;
-  const size = layout.size;
-  const origin = layout.origin;
-
+export function hex_to_pixel(
+  M: Orientation,
+  size: number,
+  h: HexCube,
+  origin: Point = { x: 0, y: 0 }
+) {
   const x = (M.f0 * h.q + M.f1 * h.r) * size;
   const y = (M.f2 * h.q + M.f3 * h.r) * size;
   return Point(x + origin.x, y + origin.y);
 }
 
-export function pixel_to_hex(layout: Layout, p: Point) {
-  const M = layout.orientation;
-  const size = layout.size;
-  const origin = layout.origin;
+export function pixel_to_hex(
+  M: Orientation,
+  size: number,
+  p: Point,
+  origin: Point = { x: 0, y: 0 }
+) {
   const pt = Point((p.x - origin.x) / size, (p.y - origin.y) / size);
 
   const q = M.b0 * pt.x + M.b1 * pt.y;
   const r = M.b2 * pt.x + M.b3 * pt.y;
   const s = -q - r;
-  return Hex(q, r, s);
+  return hex_round(Hex(q, r, s));
+}
+
+export function hex_to_JSON(hex: HexCube) {
+  return JSON.stringify(hex);
+}
+
+export function JSON_to_hex(hexJSON: string) {
+  return JSON.parse(hexJSON);
 }

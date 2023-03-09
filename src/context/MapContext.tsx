@@ -1,9 +1,9 @@
 import { createContext, ReactElement, ReactNode, useContext } from "react";
-import { initState, MapType, useMap, UseMapType } from "./useMap";
+import { initState, useMap, UseMapType } from "./useMap";
 
 const initContextState: UseMapType = {
   state: initState,
-  updateMap: (map: MapType) => {},
+  updateMap: () => void {},
 };
 
 export const MapContext = createContext<UseMapType>(initContextState);
