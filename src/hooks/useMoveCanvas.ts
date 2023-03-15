@@ -11,7 +11,7 @@ export default function useMoveCanvas(
   const mousePos = useRef<Point>(ORIGIN);
 
   const handleGrab = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (e.button === 2) setGrab(true);
+    setGrab(true);
     mousePos.current.x = e.clientX;
     mousePos.current.y = e.clientY;
   }, []);

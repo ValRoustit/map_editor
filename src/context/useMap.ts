@@ -20,10 +20,23 @@ export type ReducerAction = {
   payload?: MapType;
 };
 
+function handleUpdateMap(state: StateType, action: ReducerAction) {
+  const newMap = new Map([...state.map, ...(action.payload as MapType)]);
+
+  newMap.forEach((value, key) => {
+    if (value !== "transparent") return;
+    newMap.delete(key);
+  });
+  return newMap;
+}
+
 function reducer(state: StateType, action: ReducerAction): StateType {
   switch (action.type) {
     case REDUCER_ACTION_TYPE.UPDATE_MAP:
-      return { ...state, map: action.payload as MapType };
+      return {
+        ...state,
+        map: handleUpdateMap(state, action),
+      };
     default:
       throw new Error();
   }

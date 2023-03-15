@@ -7,6 +7,7 @@ import { MapContextProvider } from "./context/MapContext";
 
 function App() {
   const [tool, setTool] = useState<Tool>(Tool.Brush);
+  const [brushRadius, setBrushRadius] = useState(0);
 
   const handleSelectTool = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -14,6 +15,10 @@ function App() {
     },
     [setTool]
   );
+
+  const handleBrushChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setBrushRadius(parseInt(e.target.value));
+  }, []);
 
   useEffect(() => {
     const cb = (e: MouseEvent) => e.preventDefault();
@@ -28,7 +33,23 @@ function App() {
       <MapContextProvider>
         <div className="App">
           <Toolbar tool={tool} selectTool={handleSelectTool} />
-          <Canvas tool={tool} />
+          <div className="brushSize">
+            <input
+              type="range"
+              id="brushSize"
+              name="brushSize"
+              min="0"
+              max="10"
+              value={brushRadius}
+              onChange={handleBrushChange}
+            />
+            <label htmlFor="brushSize">width</label>
+          </div>
+          <Canvas
+            brushRadius={brushRadius}
+            groundType="rgb(255, 195, 0)"
+            tool={tool}
+          />
         </div>
       </MapContextProvider>
     </IconContext.Provider>

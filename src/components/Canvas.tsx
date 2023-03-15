@@ -5,7 +5,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { drawMap, hexGrid, SIZE } from "../utils/draw_utils";
+import {
+  drawBrush,
+  drawMap,
+  eraseMap,
+  hexGrid,
+  SIZE,
+} from "../utils/draw_utils";
 import useThrottleRAF from "../hooks/useThrottleRAF";
 import usePanZoom from "../hooks/usePanZoom";
 import useMoveCanvas from "../hooks/useMoveCanvas";
@@ -19,28 +25,42 @@ const MAP: MapType = new Map();
 MAP.set(JSON.stringify({ q: 10, r: 10, s: 3 }), "blue");
 
 export interface CanvasProps {
+  brushRadius: number;
+  groundType: string;
   tool: Tool;
 }
 
-function Canvas({ tool }: CanvasProps) {
+function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mousePos = useRef<Point>({ x: 0, y: 0 });
+  const [shouldDraw, setShouldDraw] = useState(false);
 
-  const { state } = useMapContext();
+  const { state, updateMap } = useMapContext();
 
   const { handleGrab, handleMove, handleRelease } = useMoveCanvas(canvasRef);
   const { handleZoom, zoom } = usePanZoom(canvasRef);
-  const { brush, handleBrush } = useTools(canvasRef, zoom);
+  const { brush, handleStroke, startStroke, endStroke, stroke, setStroke } =
+    useTools(canvasRef, zoom, brushRadius, tool, groundType);
 
   const renderGrid = useCallback(() => {
     const radius = SIZE * zoom.current;
     const context = canvasRef.current?.getContext(
       "2d"
     ) as CanvasRenderingContext2D;
+
+    const transform = context.getTransform();
+
+    const dx = mousePos?.current.x - transform.e;
+    const dy = mousePos?.current.y - transform.f;
+
     hexGrid(context, radius);
-    drawMap(context, MAP, flatTop, SIZE * zoom.current);
-    const brushMap = brush.current as MapType;
-    drawMap(context, brushMap, flatTop, SIZE * zoom.current);
-  }, [brush, zoom]);
+    drawMap(context, state.map, flatTop, SIZE * zoom.current);
+    if (shouldDraw && (tool === Tool.Brush || tool === Tool.Line))
+      drawMap(context, stroke, flatTop, SIZE * zoom.current);
+    if (shouldDraw && tool === Tool.Eraser)
+      eraseMap(context, stroke, flatTop, SIZE * zoom.current);
+    drawBrush(context, brush, flatTop, SIZE * zoom.current, Point(dx, dy));
+  }, [brush, shouldDraw, state.map, stroke, tool, zoom]);
 
   const throttledRenderGrid = useThrottleRAF(renderGrid, 120); //remplace with animate
 
@@ -54,7 +74,7 @@ function Canvas({ tool }: CanvasProps) {
 
     return () => cancelAnimationFrame(id);
     // should render only on mount
-  }, [renderGrid]);
+  }, []);
 
   useLayoutEffect(() => {
     function handleResize() {
@@ -79,18 +99,26 @@ function Canvas({ tool }: CanvasProps) {
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      handleGrab(e);
+      if (e.button === 2) handleGrab(e);
+      else {
+        setShouldDraw(true);
+        startStroke(e);
+        handleStroke(e);
+        throttledRenderGrid();
+      }
     },
-    [handleGrab]
+    [handleGrab, handleStroke, startStroke, throttledRenderGrid]
   );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      mousePos.current = Point(e.clientX, e.clientY);
+
       handleMove(e);
+      if (shouldDraw) handleStroke(e);
       throttledRenderGrid();
-      handleBrush(e);
     },
-    [handleBrush, handleMove, throttledRenderGrid]
+    [handleMove, handleStroke, shouldDraw, throttledRenderGrid]
   );
 
   const handleWheel = useCallback(
@@ -103,7 +131,11 @@ function Canvas({ tool }: CanvasProps) {
 
   const handleMouseLeave = useCallback(() => {
     handleRelease();
-  }, [handleRelease]);
+    updateMap(stroke);
+    setShouldDraw(false);
+    endStroke();
+    throttledRenderGrid();
+  }, [endStroke, handleRelease, stroke, throttledRenderGrid, updateMap]);
 
   return (
     <canvas

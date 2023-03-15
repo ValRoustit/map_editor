@@ -1,5 +1,7 @@
 // https://www.redblobgames.com/grids/hexagons/implementation.html#fractionalhex
 
+export const ORIGIN_CUBE = Hex(0, 0, 0);
+
 export type Point = { x: number; y: number };
 
 export type HexCube = { q: number; r: number; s: number };
@@ -206,20 +208,20 @@ export function hex_to_pixel(
   M: Orientation,
   size: number,
   h: HexCube,
-  origin: Point = { x: 0, y: 0 }
+  offset: Point = { x: 0, y: 0 }
 ) {
   const x = (M.f0 * h.q + M.f1 * h.r) * size;
   const y = (M.f2 * h.q + M.f3 * h.r) * size;
-  return Point(x + origin.x, y + origin.y);
+  return Point(x + offset.x, y + offset.y);
 }
 
 export function pixel_to_hex(
   M: Orientation,
   size: number,
   p: Point,
-  origin: Point = { x: 0, y: 0 }
+  offset: Point = { x: 0, y: 0 }
 ) {
-  const pt = Point((p.x - origin.x) / size, (p.y - origin.y) / size);
+  const pt = Point((p.x - offset.x) / size, (p.y - offset.y) / size);
 
   const q = M.b0 * pt.x + M.b1 * pt.y;
   const r = M.b2 * pt.x + M.b3 * pt.y;
@@ -227,10 +229,47 @@ export function pixel_to_hex(
   return hex_round(Hex(q, r, s));
 }
 
+export function hex_ring(center: HexCube, radius: number) {
+  const ring: HexCube[] = [];
+
+  let hex = hex_add(center, hex_scale(hex_direction(4), radius));
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < radius; j++) {
+      ring.push(hex);
+      hex = hex_neighbor(hex, i);
+    }
+  }
+  return ring;
+}
+
+export function hex_spiral(center: HexCube, radius: number) {
+  let results = [center];
+
+  for (let i = 1; i <= radius; i++) {
+    results = [...results, ...hex_ring(center, i)];
+  }
+  return results;
+}
+
+export function hex_range(center: HexCube, range: number) {
+  const results = [];
+  for (let q = -range; q <= range; q++) {
+    for (
+      let r = Math.max(-range, -q - range);
+      r <= Math.min(range, -q + range);
+      r++
+    ) {
+      const s = -q - r;
+      results.push(hex_add(center, Hex(q, r, s)));
+    }
+  }
+  return results;
+}
+
 export function hex_to_JSON(hex: HexCube) {
   return JSON.stringify(hex);
 }
 
-export function JSON_to_hex(hexJSON: string) {
+export function JSON_to_hex(hexJSON: string): HexCube {
   return JSON.parse(hexJSON);
 }
