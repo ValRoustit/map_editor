@@ -67,3 +67,17 @@ canvas {
 .brushSize {
   position: absolute;
 }
+
+.preview {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 25rem;
+  height: 25rem;
+  margin: 1rem;
+
+  pointer-events: none;
+
+  background: rgb(213, 209, 209);
+  border: 2px solid var(--secondary-color);
+}

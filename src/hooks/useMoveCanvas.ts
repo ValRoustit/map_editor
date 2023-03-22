@@ -1,24 +1,15 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Point } from "../utils/hex_utils";
 
-const ORIGIN = { x: 0, y: 0 };
-
 export default function useMoveCanvas(
-  canvasRef: React.RefObject<HTMLCanvasElement>
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  mousePos: React.RefObject<Point>
 ) {
-  const [grab, setGrab] = useState(false);
-
-  const mousePos = useRef<Point>(ORIGIN);
-
-  const handleGrab = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    setGrab(true);
-    mousePos.current.x = e.clientX;
-    mousePos.current.y = e.clientY;
-  }, []);
+  const [shouldGrab, setShouldGrab] = useState(false);
 
   const handleMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (!grab) return;
+      if (!mousePos.current) return;
 
       const context = canvasRef.current?.getContext(
         "2d"
@@ -33,20 +24,36 @@ export default function useMoveCanvas(
       transform.f -= dy;
 
       context.setTransform(transform);
-
-      mousePos.current.x = e.clientX;
-      mousePos.current.y = e.clientY;
     },
-    [grab, canvasRef]
+    [canvasRef, mousePos]
   );
 
-  const handleRelease = useCallback(() => {
-    setGrab(false);
+  useEffect(() => {
+    function handleKeydown(e: KeyboardEvent) {
+      if (e.code === "Space") {
+        setShouldGrab(true);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeydown);
+    return () => {
+      window.removeEventListener("keydown", handleKeydown);
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleKeyup(e: KeyboardEvent) {
+      if (e.code === "Space") setShouldGrab(false);
+    }
+
+    window.addEventListener("keyup", handleKeyup);
+    return () => {
+      window.removeEventListener("keyup", handleKeyup);
+    };
   }, []);
 
   return {
-    handleGrab,
+    shouldGrab,
     handleMove,
-    handleRelease,
   };
 }

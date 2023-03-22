@@ -6,6 +6,10 @@ export type Point = { x: number; y: number };
 
 export type HexCube = { q: number; r: number; s: number };
 
+export interface Cell extends HexCube {
+  value: string;
+}
+
 export type HexOffset = { col: number; row: number };
 
 export type Orientation = {
@@ -20,7 +24,7 @@ export type Orientation = {
   startAngle: number;
 };
 
-export const pointTop: Orientation = {
+export const POINT_TOP: Orientation = {
   f0: Math.sqrt(3.0),
   f1: Math.sqrt(3.0) / 2.0,
   f2: 0.0,
@@ -32,7 +36,7 @@ export const pointTop: Orientation = {
   startAngle: 0.5,
 };
 
-export const flatTop: Orientation = {
+export const FLAT_TOP: Orientation = {
   f0: 3.0 / 2.0,
   f1: 0.0,
   f2: Math.sqrt(3.0) / 2.0,
@@ -59,8 +63,11 @@ export function Hex(q: number, r: number, s: number): HexCube {
   return { q: q, r: r, s: s };
 }
 
-export function hex_add(a: HexCube, b: HexCube): HexCube {
-  return Hex(a.q + b.q, a.r + b.r, a.s + b.s);
+export function hex_add<T extends HexCube, U extends HexCube>(
+  a: T,
+  b: U
+): T & U {
+  return { ...a, ...b, q: a.q + b.q, r: a.r + b.r, s: a.s + b.s };
 }
 
 export function hex_subtract(a: HexCube, b: HexCube): HexCube {
@@ -79,7 +86,7 @@ export function hex_rotate_right(a: HexCube) {
   return Hex(-a.r, -a.s, -a.q);
 }
 
-const hex_directions = [
+export const HEX_DIRECTION = [
   Hex(1, 0, -1),
   Hex(1, -1, 0),
   Hex(0, -1, 1),
@@ -89,14 +96,14 @@ const hex_directions = [
 ];
 
 export function hex_direction(direction: number) {
-  return hex_directions[Math.abs(direction % 6)];
+  return HEX_DIRECTION[Math.abs(direction % 6)];
 }
 
 export function hex_neighbor(hex: HexCube, direction: number) {
   return hex_add(hex, hex_direction(direction));
 }
 
-const hex_diagonals = [
+export const HEX_DIAGONAL = [
   Hex(2, -1, -1),
   Hex(1, -2, 1),
   Hex(-1, -1, 2),
@@ -106,7 +113,7 @@ const hex_diagonals = [
 ];
 
 export function hex_diagonal_neighbor(hex: HexCube, direction: number) {
-  return hex_add(hex, hex_diagonals[direction]);
+  return hex_add(hex, HEX_DIAGONAL[direction]);
 }
 
 // distance from origin
@@ -158,50 +165,6 @@ export function hex_linedraw(a: HexCube, b: HexCube) {
     results.push(hex_round(hex_lerp(a_nudge, b_nudge, step * i)));
   }
   return results;
-}
-
-export function OffsetCoord(col: number, row: number): HexOffset {
-  return { col: col, row: row };
-}
-
-const EVEN = 1;
-const ODD = -1;
-export function qoffset_from_cube(offset: number, h: HexCube) {
-  const col = h.q;
-  const row = h.r + (h.q + offset * (h.q & 1)) / 2;
-  if (offset !== EVEN && offset !== ODD) {
-    throw "offset must be EVEN (+1) or ODD (-1)";
-  }
-  return OffsetCoord(col, row);
-}
-
-export function qoffset_to_cube(offset: number, h: HexOffset) {
-  const q = h.col;
-  const r = h.row - (h.col + offset * (h.col & 1)) / 2;
-  const s = -q - r;
-  if (offset !== EVEN && offset !== ODD) {
-    throw "offset must be EVEN (+1) or ODD (-1)";
-  }
-  return Hex(q, r, s);
-}
-
-export function roffset_from_cube(offset: number, h: HexCube) {
-  const col = h.q + (h.r + offset * (h.r & 1)) / 2;
-  const row = h.r;
-  if (offset !== EVEN && offset !== ODD) {
-    throw "offset must be EVEN (+1) or ODD (-1)";
-  }
-  return OffsetCoord(col, row);
-}
-
-export function roffset_to_cube(offset: number, h: HexOffset) {
-  const q = h.col - (h.row + offset * (h.row & 1)) / 2;
-  const r = h.row;
-  const s = -q - r;
-  if (offset !== EVEN && offset !== ODD) {
-    throw "offset must be EVEN (+1) or ODD (-1)";
-  }
-  return Hex(q, r, s);
 }
 
 export function hex_to_pixel(
@@ -266,10 +229,19 @@ export function hex_range(center: HexCube, range: number) {
   return results;
 }
 
-export function hex_to_JSON(hex: HexCube) {
-  return JSON.stringify(hex);
+export function hex_to_string(hex: HexCube) {
+  return `${hex.q}_${hex.r}`;
 }
 
-export function JSON_to_hex(hexJSON: string): HexCube {
-  return JSON.parse(hexJSON);
+export function map_size_to_pixel(
+  M: Orientation,
+  size: number,
+  cols: number,
+  rows: number
+) {
+  return { width: M.f0 * size * cols, height: M.f3 * size * rows };
+}
+
+export function hex_compare(h1: HexCube, h2: HexCube) {
+  return h1.q === h2.q && h1.r === h2.r;
 }

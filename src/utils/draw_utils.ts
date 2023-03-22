@@ -1,14 +1,13 @@
-import { MapType } from "../context/useMap";
 import {
+  Cell,
   hex_add,
   hex_to_pixel,
-  JSON_to_hex,
   Orientation,
   pixel_to_hex,
   Point,
 } from "./hex_utils";
 
-export const SIZE = 100;
+export const HEX_SIZE = 100;
 
 export type Draw = (context: CanvasRenderingContext2D) => void;
 
@@ -88,18 +87,17 @@ export function hexGrid(context: CanvasRenderingContext2D, radius: number) {
 
 export function drawMap(
   context: CanvasRenderingContext2D,
-  map: MapType,
+  map: Cell[],
   orientation: Orientation,
   size: number
 ) {
-  map.forEach((value, key) => {
-    const hex = JSON_to_hex(key);
-    const point = hex_to_pixel(orientation, size, hex);
+  map.forEach((e) => {
+    const point = hex_to_pixel(orientation, size, e);
 
     const path = hexPath(point.x, point.y, size);
     context.lineWidth = 2;
     context.strokeStyle = "white";
-    context.fillStyle = value;
+    context.fillStyle = e.value;
     context.fill(path);
     context.stroke(path);
   });
@@ -107,20 +105,24 @@ export function drawMap(
 
 export function drawBrush(
   context: CanvasRenderingContext2D,
-  brush: MapType,
+  brush: Cell[],
   orientation: Orientation,
   size: number,
-  offset: Point
+  mousePos: Point
 ) {
-  brush.forEach((value, key) => {
-    const hex = JSON_to_hex(key);
-    const cubeOffset = pixel_to_hex(orientation, size, offset);
-    const newHex = hex_add(cubeOffset, hex);
+  const transform = context.getTransform();
+
+  const dx = mousePos.x - transform.e;
+  const dy = mousePos.y - transform.f;
+
+  brush.forEach((e) => {
+    const cubeOffset = pixel_to_hex(orientation, size, Point(dx, dy));
+    const newHex = hex_add(cubeOffset, e);
     const point = hex_to_pixel(orientation, size, newHex);
 
     const path = hexPath(point.x, point.y, size);
     context.lineWidth = 3;
-    context.fillStyle = value;
+    context.fillStyle = e.value;
     context.strokeStyle = "black";
     context.fill(path);
     context.stroke(path);
@@ -129,13 +131,12 @@ export function drawBrush(
 
 export function eraseMap(
   context: CanvasRenderingContext2D,
-  map: MapType,
+  map: Cell[],
   orientation: Orientation,
   size: number
 ) {
-  map.forEach((value, key) => {
-    const hex = JSON_to_hex(key);
-    const point = hex_to_pixel(orientation, size, hex);
+  map.forEach((e) => {
+    const point = hex_to_pixel(orientation, size, e);
 
     const path = hexPath(point.x, point.y, size);
     context.globalCompositeOperation = "destination-out";
@@ -144,5 +145,24 @@ export function eraseMap(
     context.globalCompositeOperation = "source-over";
     context.strokeStyle = "black";
     context.stroke(path);
+  });
+}
+
+export function drawPreview(
+  context: CanvasRenderingContext2D,
+  map: Cell[],
+  orientation: Orientation,
+  size: number,
+  offset: Point
+) {
+  context.resetTransform();
+  context.translate(-offset.x, -offset.y);
+
+  map.forEach((e) => {
+    const point = hex_to_pixel(orientation, size, e);
+
+    const path = hexPath(point.x, point.y, size);
+    context.fillStyle = e.value;
+    context.fill(path);
   });
 }

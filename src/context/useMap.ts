@@ -1,41 +1,56 @@
 import { useCallback, useReducer } from "react";
-import { HexCube } from "../utils/hex_utils";
-
-export type MapType = Map<string, string>;
+import { Cell, hex_to_string } from "../utils/hex_utils";
 
 export type StateType = {
-  map: MapType;
+  map: Cell[];
 };
 
 export const initState: StateType = {
-  map: new Map() as MapType,
+  map: [],
 };
 
 export const enum REDUCER_ACTION_TYPE {
   UPDATE_MAP,
+  NEW_MAP,
 }
 
-export type ReducerAction = {
+export interface UpdateMapAction {
   type: REDUCER_ACTION_TYPE;
-  payload?: MapType;
-};
-
-function handleUpdateMap(state: StateType, action: ReducerAction) {
-  const newMap = new Map([...state.map, ...(action.payload as MapType)]);
-
-  newMap.forEach((value, key) => {
-    if (value !== "transparent") return;
-    newMap.delete(key);
-  });
-  return newMap;
+  payload: Cell[];
 }
 
-function reducer(state: StateType, action: ReducerAction): StateType {
+export interface ResetMapAction {
+  type: REDUCER_ACTION_TYPE;
+}
+
+export type MapReducerActions = UpdateMapAction | ResetMapAction;
+
+export function uniqCellArr(array: Cell[]) {
+  const map = new Map<string, Cell>();
+
+  array.forEach((el) => {
+    map.set(hex_to_string(el), el);
+  });
+
+  return Array.from(map.values());
+}
+
+function handleUpdateMap(state: StateType, action: UpdateMapAction) {
+  const a = uniqCellArr([...state.map, ...action.payload]);
+  return a.filter((el) => el.value !== "transparent");
+}
+
+function reducer(state: StateType, action: MapReducerActions): StateType {
   switch (action.type) {
     case REDUCER_ACTION_TYPE.UPDATE_MAP:
       return {
         ...state,
-        map: handleUpdateMap(state, action),
+        map: handleUpdateMap(state, action as UpdateMapAction),
+      };
+    case REDUCER_ACTION_TYPE.NEW_MAP:
+      return {
+        ...state,
+        map: [],
       };
     default:
       throw new Error();
@@ -45,13 +60,17 @@ function reducer(state: StateType, action: ReducerAction): StateType {
 export function useMap(initState: StateType) {
   const [state, dispatch] = useReducer(reducer, initState);
 
+  const newMap = useCallback(() => {
+    dispatch({ type: REDUCER_ACTION_TYPE.NEW_MAP });
+  }, []);
+
   const updateMap = useCallback(
-    (map: MapType) =>
+    (map: Cell[]) =>
       dispatch({ type: REDUCER_ACTION_TYPE.UPDATE_MAP, payload: map }),
     []
   );
 
-  return { state, updateMap };
+  return { state, newMap, updateMap };
 }
 
 export type UseMapType = ReturnType<typeof useMap>;

@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Tool } from "../components/Toolbar";
-import { MapType } from "../context/useMap";
-import { SIZE } from "../utils/draw_utils";
+import { HEX_SIZE } from "../utils/draw_utils";
 import {
-  flatTop,
+  Cell,
+  FLAT_TOP,
   HexCube,
   hex_add,
+  hex_compare,
   hex_linedraw,
   hex_range,
-  hex_spiral,
-  hex_to_JSON,
-  JSON_to_hex,
+  hex_to_string,
   ORIGIN_CUBE,
   pixel_to_hex,
   Point,
@@ -24,16 +23,15 @@ export function useTools(
   groundType: string
 ) {
   const brushCenter = useRef<HexCube>();
-  const [brush, setBrush] = useState<MapType>(new Map());
-  const [stroke, setStroke] = useState<MapType>(new Map());
+  const [brush, setBrush] = useState<Cell[]>([]);
+  const [stroke, setStroke] = useState<Map<string, Cell>>(new Map());
 
   useEffect(() => {
     const hexArray = hex_range(ORIGIN_CUBE, brushRadius);
-    const newBrush = new Map() as MapType;
-    hexArray?.forEach((h) => {
-      newBrush?.set(hex_to_JSON(h), "rgb(255 122 127 / 20%)");
-    });
-    setBrush(newBrush);
+
+    setBrush(
+      hexArray.map<Cell>((h) => ({ ...h, value: "rgb(245, 211, 149, 20)" }))
+    );
   }, [brushRadius]);
 
   const getHex = useCallback(
@@ -44,7 +42,12 @@ export function useTools(
       const transform = context.getTransform();
       const offset = Point(transform.e, transform.f);
 
-      const hex = pixel_to_hex(flatTop, zoom.current * SIZE, mousePos, offset);
+      const hex = pixel_to_hex(
+        FLAT_TOP,
+        zoom.current * HEX_SIZE,
+        mousePos,
+        offset
+      );
       return hex;
     },
     [canvasRef, zoom]
@@ -62,7 +65,7 @@ export function useTools(
   );
 
   const endStroke = useCallback(() => {
-    setStroke(new Map() as MapType);
+    setStroke(new Map());
   }, []);
 
   const handleStroke = useCallback(
@@ -71,22 +74,20 @@ export function useTools(
 
       const hex = getHex(mousePos);
 
-      if (!brushCenter.current) return;
-      if (hex === brushCenter.current) return;
+      if (!brushCenter.current || hex_compare(hex, brushCenter.current)) return;
 
-      const line = hex_linedraw(brushCenter?.current, hex);
+      const line = hex_linedraw(brushCenter.current, hex);
 
       if (tool !== Tool.Line) brushCenter.current = hex;
-      // const hexArray = hex_spiral(hex, brushRadius);
+      if (tool === Tool.Line) stroke.clear();
 
       const value = tool === Tool.Eraser ? "transparent" : groundType; // TODO: replace this
 
-      if (tool === Tool.Line) stroke.clear();
-
+      // TODO: might need to be refactored
       line.forEach((hexLine) => {
-        brush.forEach((v, k) => {
-          const newKey = hex_to_JSON(hex_add(hexLine, JSON_to_hex(k)));
-          stroke.set(newKey, value);
+        brush.forEach((e) => {
+          const h = hex_add(hexLine, e);
+          stroke.set(hex_to_string(h), { ...h, value: value });
         });
       });
     },
