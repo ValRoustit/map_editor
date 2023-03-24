@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
+import { Tool } from "../components/Toolbar";
 import { Point } from "../utils/hex_utils";
 
 export default function useMoveCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement>,
-  mousePos: React.RefObject<Point>
+  mousePos: React.RefObject<Point>,
+  tool: Tool
 ) {
-  const [shouldGrab, setShouldGrab] = useState(false);
+  const [canGrab, setCanGrab] = useState(false);
 
   const handleMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -30,8 +32,9 @@ export default function useMoveCanvas(
 
   useEffect(() => {
     function handleKeydown(e: KeyboardEvent) {
-      if (e.code === "Space") {
-        setShouldGrab(true);
+      if (canGrab) return;
+      if (e.code === "Space" && canvasRef.current) {
+        setCanGrab(true);
       }
     }
 
@@ -39,21 +42,28 @@ export default function useMoveCanvas(
     return () => {
       window.removeEventListener("keydown", handleKeydown);
     };
-  }, []);
+  }, [canvasRef, canGrab]);
 
   useEffect(() => {
     function handleKeyup(e: KeyboardEvent) {
-      if (e.code === "Space") setShouldGrab(false);
+      if (e.code === "Space" && canvasRef.current && tool !== Tool.Grab) {
+        setCanGrab(false);
+      }
     }
 
     window.addEventListener("keyup", handleKeyup);
     return () => {
       window.removeEventListener("keyup", handleKeyup);
     };
-  }, []);
+  }, [canvasRef, tool]);
+
+  useEffect(() => {
+    tool === Tool.Grab ? setCanGrab(true) : setCanGrab(false);
+  }, [tool]);
 
   return {
-    shouldGrab,
+    canGrab,
     handleMove,
+    setCanGrab,
   };
 }

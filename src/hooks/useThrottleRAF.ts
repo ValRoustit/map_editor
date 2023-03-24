@@ -1,7 +1,6 @@
 import { useRef, useEffect, useMemo } from "react";
 
 export default function useThrottleRAF(cb: () => void, fps = 60) {
-  const cbRef = useRef(cb);
   const frameRef = useRef(0);
 
   const wait = useMemo(() => {
@@ -15,17 +14,13 @@ export default function useThrottleRAF(cb: () => void, fps = 60) {
       if (now - prevCall < wait) return;
       prevCall = now;
 
-      cbRef.current();
+      cb();
     };
 
     return () => {
       frameRef.current = requestAnimationFrame(wrapperCb);
     };
-  }, [wait]);
-
-  useEffect(() => {
-    cbRef.current = cb;
-  }, [cb]);
+  }, [cb, wait]);
 
   useEffect(() => {
     return () => cancelAnimationFrame(frameRef.current);

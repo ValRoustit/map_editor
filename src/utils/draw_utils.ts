@@ -85,14 +85,34 @@ export function hexGrid(context: CanvasRenderingContext2D, radius: number) {
   }
 }
 
+export function isHexOnScreen(
+  context: CanvasRenderingContext2D,
+  point: Point,
+  size: number
+) {
+  const width = context.canvas.width;
+  const height = context.canvas.height;
+  const transform = context.getTransform();
+
+  const pointOffset = { x: point.x + transform.e, y: point.y + transform.f };
+
+  return (
+    pointOffset.x >= -size &&
+    pointOffset.x <= width + size &&
+    pointOffset.y >= -size &&
+    pointOffset.y <= height + size
+  );
+}
+
 export function drawMap(
   context: CanvasRenderingContext2D,
   map: Cell[],
   orientation: Orientation,
   size: number
 ) {
-  map.forEach((e) => {
+  map?.forEach((e) => {
     const point = hex_to_pixel(orientation, size, e);
+    if (!isHexOnScreen(context, point, size)) return;
 
     const path = hexPath(point.x, point.y, size);
     context.lineWidth = 2;
@@ -119,6 +139,7 @@ export function drawBrush(
     const cubeOffset = pixel_to_hex(orientation, size, Point(dx, dy));
     const newHex = hex_add(cubeOffset, e);
     const point = hex_to_pixel(orientation, size, newHex);
+    if (!isHexOnScreen(context, point, size)) return;
 
     const path = hexPath(point.x, point.y, size);
     context.lineWidth = 3;
@@ -137,6 +158,7 @@ export function eraseMap(
 ) {
   map.forEach((e) => {
     const point = hex_to_pixel(orientation, size, e);
+    if (!isHexOnScreen(context, point, size)) return;
 
     const path = hexPath(point.x, point.y, size);
     context.globalCompositeOperation = "destination-out";

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export default function useOnMount(
+export default function useRenderCanvasOnMount(
   canvasRef: React.RefObject<HTMLCanvasElement>,
   cb: () => void
 ) {

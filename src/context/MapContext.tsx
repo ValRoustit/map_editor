@@ -2,8 +2,11 @@ import { createContext, ReactElement, ReactNode, useContext } from "react";
 import { initState, useMap, UseMapType } from "./useMap";
 
 const initContextState: UseMapType = {
+  newMap: () => void {},
   state: initState,
   updateMap: () => void {},
+  undo: () => void {},
+  redo: () => void {},
 };
 
 export const MapContext = createContext<UseMapType>(initContextState);

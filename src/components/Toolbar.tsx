@@ -1,4 +1,4 @@
-import { IoBrushOutline, IoResize } from "react-icons/io5";
+import { IoBrushOutline, IoResize, IoHandRightOutline } from "react-icons/io5";
 import { BsEraser } from "react-icons/bs";
 import { ChangeEventHandler } from "react";
 
@@ -6,6 +6,7 @@ export enum Tool {
   Brush = "brush",
   Eraser = "eraser",
   Line = "line",
+  Grab = "grab",
 }
 
 export interface ToolbarProps {
@@ -48,6 +49,17 @@ export function Toolbar({ tool, selectTool }: ToolbarProps) {
       />
       <label className="icon-button" htmlFor={Tool.Line} title={Tool.Line}>
         <IoResize />
+      </label>
+      <input
+        type="radio"
+        name="tool"
+        id={Tool.Grab}
+        value={Tool.Grab}
+        checked={tool === Tool.Grab}
+        onChange={selectTool}
+      />
+      <label className="icon-button" htmlFor={Tool.Grab} title={Tool.Grab}>
+        <IoHandRightOutline />
       </label>
     </fieldset>
   );

@@ -60,8 +60,14 @@ export function useTools(
       const hex = getHex(mousePos);
 
       brushCenter.current = hex;
+
+      const value = tool === Tool.Eraser ? "erase" : groundType;
+      brush.forEach((e) => {
+        const h = hex_add(hex, e);
+        stroke.set(hex_to_string(h), { ...h, value: value });
+      });
     },
-    [getHex]
+    [brush, getHex, groundType, stroke, tool]
   );
 
   const endStroke = useCallback(() => {
@@ -81,9 +87,8 @@ export function useTools(
       if (tool !== Tool.Line) brushCenter.current = hex;
       if (tool === Tool.Line) stroke.clear();
 
-      const value = tool === Tool.Eraser ? "transparent" : groundType; // TODO: replace this
+      const value = tool === Tool.Eraser ? "erase" : groundType;
 
-      // TODO: might need to be refactored
       line.forEach((hexLine) => {
         brush.forEach((e) => {
           const h = hex_add(hexLine, e);
@@ -103,23 +108,3 @@ export function useTools(
     setStroke,
   };
 }
-
-// const handleBrush = useCallback(
-//   (event: React.MouseEvent<HTMLCanvasElement>) => {
-//     const mousePos = { x: event.clientX, y: event.clientY };
-
-//     const hex = getHex(mousePos);
-
-//     if (hex === brushCenter.current) return; // hexCube type does not nest any references
-
-//     brushCenter.current = hex;
-//     // const mapKey = hex_to_JSON(hex);
-//     const hexArray = hex_spiral(hex, brushRadius);
-
-//     brush.current.clear();
-//     hexArray?.forEach((h) => {
-//       brush.current?.set(hex_to_JSON(h), "rgb(255 122 127 / 10%)");
-//     });
-//   },
-//   [brushRadius, getHex]
-// );
