@@ -1,5 +1,7 @@
 // https://www.redblobgames.com/grids/hexagons/implementation.html#fractionalhex
 
+import { CellTypeKeys } from "../components/SelectCellType";
+
 export const ORIGIN_CUBE = Hex(0, 0, 0);
 
 export type Point = { x: number; y: number };
@@ -7,7 +9,7 @@ export type Point = { x: number; y: number };
 export type HexCube = { q: number; r: number; s: number };
 
 export interface Cell extends HexCube {
-  value: string;
+  value: CellTypeKeys;
 }
 
 export type HexOffset = { col: number; row: number };

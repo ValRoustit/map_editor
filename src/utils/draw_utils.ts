@@ -1,3 +1,4 @@
+import { CellType } from "../components/SelectCellType";
 import {
   Cell,
   hex_add,
@@ -8,16 +9,6 @@ import {
 } from "./hex_utils";
 
 export const HEX_SIZE = 100;
-
-export type Draw = (context: CanvasRenderingContext2D) => void;
-
-export type Pen = {
-  active: boolean;
-  x: number;
-  y: number;
-  value: string;
-  radius: number;
-};
 
 export function clearCanvas(context: CanvasRenderingContext2D) {
   const height = context.canvas.height;
@@ -117,7 +108,7 @@ export function drawMap(
     const path = hexPath(point.x, point.y, size);
     context.lineWidth = 2;
     context.strokeStyle = "white";
-    context.fillStyle = e.value;
+    context.fillStyle = CellType[e.value];
     context.fill(path);
     context.stroke(path);
   });
@@ -143,7 +134,7 @@ export function drawBrush(
 
     const path = hexPath(point.x, point.y, size);
     context.lineWidth = 3;
-    context.fillStyle = e.value;
+    context.fillStyle = CellType[e.value];
     context.strokeStyle = "black";
     context.fill(path);
     context.stroke(path);
@@ -184,7 +175,7 @@ export function drawPreview(
     const point = hex_to_pixel(orientation, size, e);
 
     const path = hexPath(point.x, point.y, size);
-    context.fillStyle = e.value;
+    context.fillStyle = CellType[e.value];
     context.fill(path);
   });
 }

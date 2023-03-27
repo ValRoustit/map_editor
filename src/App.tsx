@@ -3,14 +3,18 @@ import { useEffectOnce, useLocalStorage } from "usehooks-ts";
 import "./App.css";
 import Canvas from "./components/Canvas";
 import Preview from "./components/Preview";
-import SelectCellType, { CellType } from "./components/SelectCellType";
+import SelectCellType, {
+  CellType,
+  CellTypeKeys,
+} from "./components/SelectCellType";
 import { Tool, Toolbar } from "./components/Toolbar";
 import { useMapContext } from "./context/MapContext";
+import useCtrlShortCut from "./hooks/useCtrlShortCut";
 import { download, trimExtension, upload } from "./utils/utils";
 
 function App() {
   const [tool, setTool] = useState(Tool.Brush);
-  const [cellType, setCellType] = useState(CellType.Ground);
+  const [cellType, setCellType] = useState<CellTypeKeys>("Ground");
   const [brushRadius, setBrushRadius] = useState(0);
   const [fileName, setFileName] = useState("");
   const modalRef = useRef<HTMLDialogElement>(null);
@@ -22,6 +26,9 @@ function App() {
     data: JSON.stringify(state.map),
   });
 
+  useCtrlShortCut("z", undo);
+  useCtrlShortCut("y", redo);
+
   const handleSelectTool = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       setTool(e.target.value as Tool);
@@ -31,7 +38,7 @@ function App() {
 
   const handleSelectCellType = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
-      setCellType(e.target.value as CellType);
+      setCellType(e.target.value as CellTypeKeys);
     },
     []
   );

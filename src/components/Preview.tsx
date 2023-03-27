@@ -36,7 +36,7 @@ export default function Preview() {
     );
   }, [state]);
 
-  const throttledRenderGrid = useThrottleRAF(renderGrid, 120);
+  const throttledRenderGrid = useThrottleRAF(renderGrid);
 
   // TODO: limit canvas size with panzoom and move canvas,
   // TODO: constant preview size and add red box to visualize where in canvas you are should be able to grab and zoom from preview?

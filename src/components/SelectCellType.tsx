@@ -4,10 +4,13 @@ export enum CellType {
   Ground = "brown",
   Wall = "black",
   Water = "blue",
+  Empty = "transparent",
 }
 
+export type CellTypeKeys = keyof typeof CellType;
+
 export interface SelectCellTypeProps {
-  cellType: CellType;
+  cellType: CellTypeKeys;
   selectCellType: ChangeEventHandler<HTMLSelectElement>;
 }
 
@@ -17,9 +20,14 @@ export default function SelectCellType({
 }: SelectCellTypeProps) {
   return (
     <select onChange={selectCellType} value={cellType}>
-      <option value={CellType.Ground}>Ground</option>
-      <option value={CellType.Wall}>Wall</option>
-      <option value={CellType.Water}>Water</option>
+      {Object.keys(CellType).map((key, index) => {
+        if (key !== "Empty")
+          return (
+            <option key={index} value={key}>
+              {key}
+            </option>
+          );
+      })}
     </select>
   );
 }

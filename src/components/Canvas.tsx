@@ -22,10 +22,11 @@ import { useMapContext } from "../context/MapContext";
 import { useTools } from "../hooks/useTools";
 import useWindowResize from "../hooks/useWindowResize";
 import useRenderCanvasOnMount from "../hooks/useRenderCanvasOnMount";
+import { CellTypeKeys } from "./SelectCellType";
 
 export interface CanvasProps {
   brushRadius: number;
-  groundType: string;
+  groundType: CellTypeKeys;
   tool: Tool;
 }
 
@@ -91,7 +92,7 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
     return !hex_compare(hex, prevBrushPos);
   }, [zoom]);
 
-  const throttledRenderGrid = useThrottleRAF(renderGrid, 120); //remplace with animate
+  const throttledRenderGrid = useThrottleRAF(renderGrid);
 
   useRenderCanvasOnMount(canvasRef, renderGrid);
   useWindowResize(canvasRef, throttledRenderGrid);
@@ -123,7 +124,7 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
       }
       mousePos.current = Point(e.clientX, e.clientY);
     },
-    [grab, handleMove, draw, handleStroke, hasBrushMoved, throttledRenderGrid]
+    [grab, draw, handleStroke, hasBrushMoved, handleMove, throttledRenderGrid]
   );
 
   const handleWheel = useCallback(

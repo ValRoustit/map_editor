@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { CellType, CellTypeKeys } from "../components/SelectCellType";
 import { Tool } from "../components/Toolbar";
 import { HEX_SIZE } from "../utils/draw_utils";
 import {
@@ -20,7 +21,7 @@ export function useTools(
   zoom: React.MutableRefObject<number>,
   brushRadius: number,
   tool: Tool,
-  groundType: string
+  groundType: CellTypeKeys
 ) {
   const brushCenter = useRef<HexCube>();
   const [brush, setBrush] = useState<Cell[]>([]);
@@ -29,10 +30,8 @@ export function useTools(
   useEffect(() => {
     const hexArray = hex_range(ORIGIN_CUBE, brushRadius);
 
-    setBrush(
-      hexArray.map<Cell>((h) => ({ ...h, value: "rgb(245, 211, 149, 20)" }))
-    );
-  }, [brushRadius]);
+    setBrush(hexArray.map<Cell>((h) => ({ ...h, value: groundType })));
+  }, [brushRadius, groundType]);
 
   const getHex = useCallback(
     (mousePos: Point) => {
@@ -61,7 +60,7 @@ export function useTools(
 
       brushCenter.current = hex;
 
-      const value = tool === Tool.Eraser ? "erase" : groundType;
+      const value = tool === Tool.Eraser ? "Empty" : groundType;
       brush.forEach((e) => {
         const h = hex_add(hex, e);
         stroke.set(hex_to_string(h), { ...h, value: value });
@@ -87,7 +86,7 @@ export function useTools(
       if (tool !== Tool.Line) brushCenter.current = hex;
       if (tool === Tool.Line) stroke.clear();
 
-      const value = tool === Tool.Eraser ? "erase" : groundType;
+      const value = tool === Tool.Eraser ? "Empty" : groundType;
 
       line.forEach((hexLine) => {
         brush.forEach((e) => {
