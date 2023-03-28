@@ -25,7 +25,7 @@ function App() {
     data: JSON.stringify(state.map),
   });
 
-  useCtrlShortCut("z", undo); // group in one switch logic
+  useCtrlShortCut("z", undo); // TODO group in one switch logic
   useCtrlShortCut("y", redo);
 
   const handleSelectTool = useCallback(
