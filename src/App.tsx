@@ -4,7 +4,6 @@ import "./App.css";
 import Canvas from "./components/Canvas";
 import Preview from "./components/Preview";
 import SelectCellType, {
-  CellType,
   CellTypeKeys,
 } from "./components/tools/SelectCellType";
 import { Tool, Toolbar } from "./components/tools/Toolbar";
