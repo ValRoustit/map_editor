@@ -1,5 +1,5 @@
 import { useCallback, useReducer } from "react";
-import { CellType } from "../components/SelectCellType";
+import { CellType } from "../components/tools/SelectCellType";
 import { Cell } from "../utils/hex_utils";
 import { uniqCellArr } from "../utils/utils";
 
@@ -50,7 +50,7 @@ export type MapActions = MapAction | NewMapAction | RenameMapAction;
 function handleUpdateMap(state: StateType, action: MapAction): StateType {
   const undos = [...state.undos, state.map].slice(-UNDO_LIMIT) as Cell[][];
   const a = uniqCellArr([...state.map, ...(action.payload as Cell[])]);
-  const map = a.filter((el) => el.value !== CellType.Empty);
+  const map = a.filter((el) => CellType[el.value] !== CellType.Empty);
 
   return { ...state, map: map, undos: undos, redos: [] };
 }

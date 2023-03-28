@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Tool } from "../components/Toolbar";
+import { Tool } from "../components/tools/Toolbar";
 import { Point } from "../utils/hex_utils";
 
 export default function useMoveCanvas(

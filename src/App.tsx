@@ -6,8 +6,8 @@ import Preview from "./components/Preview";
 import SelectCellType, {
   CellType,
   CellTypeKeys,
-} from "./components/SelectCellType";
-import { Tool, Toolbar } from "./components/Toolbar";
+} from "./components/tools/SelectCellType";
+import { Tool, Toolbar } from "./components/tools/Toolbar";
 import { useMapContext } from "./context/MapContext";
 import useCtrlShortCut from "./hooks/useCtrlShortCut";
 import { download, trimExtension, upload } from "./utils/utils";
@@ -26,7 +26,7 @@ function App() {
     data: JSON.stringify(state.map),
   });
 
-  useCtrlShortCut("z", undo);
+  useCtrlShortCut("z", undo); // group in one switch logic
   useCtrlShortCut("y", redo);
 
   const handleSelectTool = useCallback(

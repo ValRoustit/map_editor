@@ -1,4 +1,5 @@
-import { CellType } from "../components/SelectCellType";
+import Color from "colorjs.io";
+import { CellType } from "../components/tools/SelectCellType";
 import {
   Cell,
   hex_add,
@@ -126,16 +127,19 @@ export function drawBrush(
   const dx = mousePos.x - transform.e;
   const dy = mousePos.y - transform.f;
 
+  const brushColor = new Color(CellType[brush[0].value]);
+  brushColor.alpha = 0.3;
+
   brush.forEach((e) => {
     const cubeOffset = pixel_to_hex(orientation, size, Point(dx, dy));
     const newHex = hex_add(cubeOffset, e);
     const point = hex_to_pixel(orientation, size, newHex);
     if (!isHexOnScreen(context, point, size)) return;
 
-    const path = hexPath(point.x, point.y, size);
-    context.lineWidth = 3;
-    context.fillStyle = CellType[e.value];
-    context.strokeStyle = "black";
+    const path = hexPath(point.x, point.y, size); // TODO have only the stroke with no neighbor
+    context.lineWidth = 5;
+    context.fillStyle = brushColor.toString();
+    context.strokeStyle = "#FFFF00";
     context.fill(path);
     context.stroke(path);
   });

@@ -1,6 +1,8 @@
 // https://www.redblobgames.com/grids/hexagons/implementation.html#fractionalhex
 
-import { CellTypeKeys } from "../components/SelectCellType";
+// TODO remove unused functions
+
+import { CellTypeKeys } from "../components/tools/SelectCellType";
 
 export const ORIGIN_CUBE = Hex(0, 0, 0);
 

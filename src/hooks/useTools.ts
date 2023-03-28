@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CellType, CellTypeKeys } from "../components/SelectCellType";
-import { Tool } from "../components/Toolbar";
+import { CellType, CellTypeKeys } from "../components/tools/SelectCellType";
+import { Tool } from "../components/tools/Toolbar";
 import { HEX_SIZE } from "../utils/draw_utils";
 import {
   Cell,

@@ -17,12 +17,12 @@ import {
   pixel_to_hex,
   Point,
 } from "../utils/hex_utils";
-import { Tool } from "./Toolbar";
+import { Tool } from "./tools/Toolbar";
 import { useMapContext } from "../context/MapContext";
 import { useTools } from "../hooks/useTools";
 import useWindowResize from "../hooks/useWindowResize";
 import useRenderCanvasOnMount from "../hooks/useRenderCanvasOnMount";
-import { CellTypeKeys } from "./SelectCellType";
+import { CellTypeKeys } from "./tools/SelectCellType";
 
 export interface CanvasProps {
   brushRadius: number;
@@ -31,6 +31,7 @@ export interface CanvasProps {
 }
 
 export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
+  // TODO add second canvas for cursor rendering
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mousePos = useRef<Point>({ x: 0, y: 0 });
   const brushCenter = useRef<HexCube>(Hex(0, 0, 0));
