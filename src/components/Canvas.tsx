@@ -74,7 +74,7 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
         HEX_SIZE * zoom.current
       );
     if (displayBrush)
-      drawBrush(context, brush, FLAT_TOP, radius, mousePos?.current);
+      drawBrush(context, brush, FLAT_TOP, radius, mousePos?.current); // TODO fix display brush when selecting grab tool and display before cursor on the canvas
   }, [brush, draw, displayBrush, state.map, stroke, tool, zoom]);
 
   const hasBrushMoved = useCallback(() => {

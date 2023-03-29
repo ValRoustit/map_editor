@@ -34,6 +34,7 @@ export function hexagon(i: number, j: number, radius: number): Path2D {
 }
 
 export function hexPath(x: number, y: number, radius: number) {
+  // TODO rework for draw only some sides
   const a = (2 * Math.PI) / 6;
   const path = new Path2D();
   for (let i = 0; i < 6; i++) {
@@ -44,6 +45,7 @@ export function hexPath(x: number, y: number, radius: number) {
 }
 
 export function hexGrid(context: CanvasRenderingContext2D, radius: number) {
+  // TODO rework for both flat top and point top orientation
   // see html canvas doc for transform matrix values
   const storedTransform = context.getTransform();
 
