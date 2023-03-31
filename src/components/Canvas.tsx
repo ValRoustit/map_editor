@@ -119,11 +119,11 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (!rect) return;
-      mousePos.current = Point(e.clientX - rect.left, e.clientY - rect.top);
       if (grab) {
         handleMove(e);
         throttledRenderGrid();
       }
+      mousePos.current = Point(e.clientX - rect.left, e.clientY - rect.top);
       if (draw) handleStroke(mousePos.current);
       if (hasBrushMoved()) {
         throttledRenderGrid();

@@ -16,11 +16,13 @@ export default function useMoveCanvas(
       const context = canvasRef.current?.getContext(
         "2d"
       ) as CanvasRenderingContext2D;
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
 
       const transform = context.getTransform();
 
-      const dx = mousePos.current.x - e.clientX;
-      const dy = mousePos.current.y - e.clientY;
+      const dx = mousePos.current.x - e.clientX + rect.left;
+      const dy = mousePos.current.y - e.clientY + rect.top;
 
       transform.e -= dx;
       transform.f -= dy;
