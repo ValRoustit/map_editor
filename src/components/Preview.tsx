@@ -2,13 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useMapContext } from "../context/MapContext";
 import useThrottleRAF from "../hooks/useThrottleRAF";
 import { drawPreview, HEX_SIZE } from "../utils/draw_utils";
-import {
-  FLAT_TOP,
-  HexCube,
-  hex_length,
-  hex_to_pixel,
-  Point,
-} from "../utils/hex_utils";
+import { FLAT_TOP, hex_to_pixel, Point } from "../utils/hex_utils";
 
 export type CanvasLimitsType = {
   topLeft: Point;

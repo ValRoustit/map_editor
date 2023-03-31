@@ -1,32 +1,17 @@
-import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import { useEffectOnce, useLocalStorage } from "usehooks-ts";
+import { ChangeEvent, useCallback, useState } from "react";
 import "./App.css";
 import Canvas from "./components/Canvas";
+import OptionsBar from "./components/options/OptionsBar";
 import Preview from "./components/Preview";
 import SelectCellType, {
   CellTypeKeys,
 } from "./components/tools/SelectCellType";
 import { Tool, Toolbar } from "./components/tools/Toolbar";
-import { useMapContext } from "./context/MapContext";
-import useCtrlShortCut from "./hooks/useCtrlShortCut";
-import { download, trimExtension, upload } from "./utils/utils";
 
 function App() {
   const [tool, setTool] = useState(Tool.Brush);
   const [cellType, setCellType] = useState<CellTypeKeys>("Ground");
   const [brushRadius, setBrushRadius] = useState(0);
-  const [fileName, setFileName] = useState("");
-  const modalRef = useRef<HTMLDialogElement>(null);
-
-  const { state, newMap, redo, undo } = useMapContext();
-
-  const [storedMap, setStoredMap] = useLocalStorage("storedMap", {
-    name: state.name,
-    data: JSON.stringify(state.map),
-  });
-
-  useCtrlShortCut("z", undo); // TODO group in one switch logic
-  useCtrlShortCut("y", redo);
 
   const handleSelectTool = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -46,83 +31,35 @@ function App() {
     setBrushRadius(parseInt(e.target.value));
   }, []);
 
-  const handleOpenModal = useCallback(() => {
-    modalRef.current?.showModal();
-  }, []);
-
-  const handleDownload = useCallback(() => {
-    const mapData = JSON.stringify(state.map);
-    setStoredMap({ name: fileName, data: mapData });
-    download(mapData, fileName);
-  }, [fileName, setStoredMap, state.map]);
-
-  const handleUpload = useCallback(async () => {
-    const mapData = await upload();
-    const name = trimExtension(mapData.name);
-    const map = await mapData.text();
-
-    setFileName(name);
-    newMap(JSON.parse(map), name);
-  }, [newMap]);
-
-  useEffect(() => {
-    setStoredMap({ name: state.name, data: JSON.stringify(state.map) });
-  }, [setStoredMap, state.map, state.name]);
-
-  useEffectOnce(() => {
-    newMap(JSON.parse(storedMap.data), storedMap.name);
-    setFileName(storedMap.name);
-  });
-
   return (
     <div className="App">
-      <Toolbar tool={tool} selectTool={handleSelectTool} />
-      <div className="brushSize">
-        <input
-          type="range"
-          id="brushSize"
-          name="brushSize"
-          min="0"
-          max="10"
-          value={brushRadius}
-          onChange={handleBrushChange}
-        />
-        <label htmlFor="brushSize">width</label>
-        <SelectCellType
+      <OptionsBar />
+      <div className="grid auto-cols-max grid-flow-col">
+        <Toolbar
           cellType={cellType}
           selectCellType={handleSelectCellType}
+          tool={tool}
+          selectTool={handleSelectTool}
         />
-        <button onClick={handleOpenModal}>Save map</button>
-        <button onClick={handleUpload}>Open map</button>
-        <button onClick={() => newMap()}>new map</button>
-        <button onClick={undo} disabled={!state.undos.length}>
-          Undo
-        </button>
-        <button onClick={redo} disabled={!state.redos.length}>
-          Redo
-        </button>
-        <dialog ref={modalRef}>
-          <form method="dialog">
-            <p>
-              <label>
-                Map name:
-                <input
-                  type="text"
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value)}
-                />
-              </label>
-            </p>
-            <div>
-              <button value="cancel">Cancel</button>
-              <button value="default" onClick={handleDownload}>
-                Save
-              </button>
-            </div>
-          </form>
-        </dialog>
+        <div className="flex flex-col">
+          <div className="text-transform: inline-flex items-center gap-2 border-b border-gray-400 border-transparent px-3 py-1 text-xs font-semibold uppercase text-gray-500">
+            <label htmlFor="brushSize">
+              Tool diameter ({brushRadius * 2 + 1})
+            </label>
+            <input
+              className="range h-1.5 cursor-pointer appearance-none rounded-lg bg-gray-300  dark:bg-gray-700"
+              type="range"
+              id="brushSize"
+              name="brushSize"
+              min="0"
+              max="10"
+              value={brushRadius}
+              onChange={handleBrushChange}
+            />
+          </div>
+          <Canvas brushRadius={brushRadius} groundType={cellType} tool={tool} />
+        </div>
       </div>
-      <Canvas brushRadius={brushRadius} groundType={cellType} tool={tool} />
       <Preview />
     </div>
   );

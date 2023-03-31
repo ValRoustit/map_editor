@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CellType, CellTypeKeys } from "../components/tools/SelectCellType";
+import { CellTypeKeys } from "../components/tools/SelectCellType";
 import { Tool } from "../components/tools/Toolbar";
 import { HEX_SIZE } from "../utils/draw_utils";
 import {
@@ -53,9 +53,7 @@ export function useTools(
   );
 
   const startStroke = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
-      const mousePos = Point(event.clientX, event.clientY);
-
+    (mousePos: Point) => {
       const hex = getHex(mousePos);
 
       brushCenter.current = hex;
@@ -74,9 +72,7 @@ export function useTools(
   }, []);
 
   const handleStroke = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement>) => {
-      const mousePos = Point(event.clientX, event.clientY);
-
+    (mousePos: Point) => {
       const hex = getHex(mousePos);
 
       if (!brushCenter.current || hex_compare(hex, brushCenter.current)) return;

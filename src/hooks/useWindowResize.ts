@@ -8,10 +8,11 @@ export default function useWindowResize(
     function handleResize() {
       if (!canvasRef.current) return;
       const context = canvasRef.current.getContext("2d");
+      const rect = canvasRef.current.getBoundingClientRect();
       const transform = context?.getTransform();
 
-      canvasRef.current.width = window.innerWidth;
-      canvasRef.current.height = window.innerHeight;
+      canvasRef.current.width = window.innerWidth - rect.left;
+      canvasRef.current.height = window.innerHeight - rect.top;
       context?.setTransform(transform);
 
       cb();

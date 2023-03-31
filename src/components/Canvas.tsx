@@ -12,7 +12,6 @@ import useMoveCanvas from "../hooks/useMoveCanvas";
 import {
   FLAT_TOP,
   Hex,
-  HexCube,
   hex_compare,
   pixel_to_hex,
   Point,
@@ -34,7 +33,7 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
   // TODO add second canvas for cursor rendering
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mousePos = useRef<Point>({ x: 0, y: 0 });
-  const brushCenter = useRef<HexCube>(Hex(0, 0, 0));
+  const brushCenter = useRef(Hex(0, 0, 0));
   const [draw, setDraw] = useState(false);
   const [grab, setGrab] = useState(false);
   const [displayBrush, setDisplayBrush] = useState(false);
@@ -100,14 +99,17 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      mousePos.current = Point(e.clientX - rect.left, e.clientY - rect.top);
       if (e.button !== 0) return;
       if (canGrab) {
         setGrab(true);
         return;
       }
       setDraw(true);
-      startStroke(e);
-      handleStroke(e);
+      startStroke(mousePos.current);
+      handleStroke(mousePos.current);
       renderGrid();
     },
     [handleStroke, renderGrid, canGrab, startStroke]
@@ -115,15 +117,17 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      mousePos.current = Point(e.clientX - rect.left, e.clientY - rect.top);
       if (grab) {
         handleMove(e);
         throttledRenderGrid();
       }
-      if (draw) handleStroke(e);
+      if (draw) handleStroke(mousePos.current);
       if (hasBrushMoved()) {
         throttledRenderGrid();
       }
-      mousePos.current = Point(e.clientX, e.clientY);
     },
     [grab, draw, handleStroke, hasBrushMoved, handleMove, throttledRenderGrid]
   );

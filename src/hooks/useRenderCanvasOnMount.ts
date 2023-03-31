@@ -6,8 +6,10 @@ export default function useRenderCanvasOnMount(
 ) {
   useEffect(() => {
     if (canvasRef.current) {
-      canvasRef.current.width = window.innerWidth;
-      canvasRef.current.height = window.innerHeight;
+      const rect = canvasRef.current.getBoundingClientRect();
+
+      canvasRef.current.width = window.innerWidth - rect.left;
+      canvasRef.current.height = window.innerHeight - rect.top;
     }
     const id = requestAnimationFrame(cb);
 

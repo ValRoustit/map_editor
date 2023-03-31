@@ -1,7 +1,5 @@
-/* TODO ad scss */
-
 body {
-  background: rgb(213, 209, 209);
+  background: rgb(255, 255, 255);
 }
 
 .App {
@@ -9,65 +7,8 @@ body {
   height: 100%;
 }
 
-.toolbar {
-  position: absolute;
-  margin: 2rem;
-  padding: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  border: 2px solid var(--secondary-color);
-  border-radius: 5rem;
-  gap: 3px;
-
-  background: var(--primary-color);
-  box-shadow: 0.2rem 0.2rem var(--secondary-color);
-}
-
-.toolbar:focus {
-  outline: red;
-}
-
-.icon-button {
-  display: block;
-  cursor: pointer;
-  font-size: 2rem;
-  padding: 1rem;
-
-  border: 2px solid var(--secondary-color);
-  border-radius: 50%;
-
-  background: var(--primary-color);
-}
-
-.icon-button:hover {
-  background: var(--tertiary-color);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-  outline: 2px solid var(--outline-color);
-}
-
 input[type="radio"] {
   appearance: none;
-}
-
-input[type="radio"]:checked + .icon-button {
-  background: var(--secondary-color);
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-input[type="radio"]:focus + .icon-button {
-  outline: 2px solid var(--outline-color);
-}
-
-canvas {
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-}
-
-.brushSize {
-  position: absolute;
 }
 
 .preview {
