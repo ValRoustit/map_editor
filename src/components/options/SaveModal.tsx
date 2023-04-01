@@ -1,7 +1,6 @@
 import { faFloppyDisk } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocalStorage } from "usehooks-ts";
 import { useMapContext } from "../../context/MapContext";
 import { download } from "../../utils/utils";
 import OptionButton from "./OptionButton";

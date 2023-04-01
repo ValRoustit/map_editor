@@ -34,7 +34,6 @@ export function hexagon(i: number, j: number, radius: number): Path2D {
 }
 
 export function hexPath(x: number, y: number, radius: number) {
-  // TODO rework for draw only some sides
   const a = (2 * Math.PI) / 6;
   const path = new Path2D();
   for (let i = 0; i < 6; i++) {
@@ -109,8 +108,6 @@ export function drawMap(
     if (!isHexOnScreen(context, point, size)) return;
 
     const path = hexPath(point.x, point.y, size);
-    context.lineWidth = 2;
-    context.strokeStyle = "white";
     context.fillStyle = CellType[e.value];
     context.fill(path);
     context.stroke(path);
@@ -129,21 +126,15 @@ export function drawBrush(
   const dx = mousePos.x - transform.e;
   const dy = mousePos.y - transform.f;
 
-  const brushColor = new Color(CellType[brush[0].value]);
-  brushColor.alpha = 0.3;
-
   brush.forEach((e) => {
     const cubeOffset = pixel_to_hex(orientation, size, Point(dx, dy));
     const newHex = hex_add(cubeOffset, e);
     const point = hex_to_pixel(orientation, size, newHex);
     if (!isHexOnScreen(context, point, size)) return;
 
-    const path = hexPath(point.x, point.y, size); // TODO have only the stroke with no neighbor
-    context.lineWidth = 5;
-    context.fillStyle = brushColor.toString();
-    context.strokeStyle = "#FFFF00";
+    const path = hexPath(point.x, point.y, size);
+    context.fillStyle = "rgb(20, 20, 20, 30%)";
     context.fill(path);
-    context.stroke(path);
   });
 }
 
@@ -162,7 +153,7 @@ export function eraseMap(
     context.lineWidth = 1;
     context.fill(path);
     context.globalCompositeOperation = "source-over";
-    context.strokeStyle = "black";
+    // context.strokeStyle = "black";
     context.stroke(path);
   });
 }

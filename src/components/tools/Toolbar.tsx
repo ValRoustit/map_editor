@@ -5,9 +5,9 @@ import {
   faPencil,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChangeEventHandler } from "react";
+import { ChangeEventHandler, MouseEventHandler } from "react";
 import ToolButton from "./ToolButton";
-import SelectCellType, { CellTypeKeys } from "./SelectCellType";
+import SelectCellType, { CellType, CellTypeKeys } from "./SelectCellType";
 
 export enum Tool {
   Brush = "brush",
@@ -19,7 +19,7 @@ export enum Tool {
 export interface ToolbarProps {
   cellType: CellTypeKeys;
   tool: Tool;
-  selectCellType: ChangeEventHandler<HTMLSelectElement>;
+  selectCellType: MouseEventHandler<HTMLButtonElement>;
   selectTool: ChangeEventHandler<HTMLInputElement>;
 }
 

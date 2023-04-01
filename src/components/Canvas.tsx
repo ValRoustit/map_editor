@@ -110,9 +110,9 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
       setDraw(true);
       startStroke(mousePos.current);
       handleStroke(mousePos.current);
-      renderGrid();
+      throttledRenderGrid();
     },
-    [handleStroke, renderGrid, canGrab, startStroke]
+    [canGrab, startStroke, handleStroke, throttledRenderGrid]
   );
 
   const handleMouseMove = useCallback(
@@ -156,6 +156,10 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
     handleMouseUp();
   }, [handleMouseUp]);
 
+  const handleMouseIn = useCallback(() => {
+    if (!canGrab) setDisplayBrush(true);
+  }, [canGrab]);
+
   useEffect(() => {
     renderGrid();
   }, [renderGrid, displayBrush]);
@@ -180,7 +184,7 @@ export default function Canvas({ brushRadius, groundType, tool }: CanvasProps) {
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setDisplayBrush(true)}
+      onMouseEnter={handleMouseIn}
       onMouseOut={handleMouseOut}
       onWheel={handleWheel}
     />

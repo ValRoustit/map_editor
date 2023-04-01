@@ -3,9 +3,7 @@ import "./App.css";
 import Canvas from "./components/Canvas";
 import OptionsBar from "./components/options/OptionsBar";
 import Preview from "./components/Preview";
-import SelectCellType, {
-  CellTypeKeys,
-} from "./components/tools/SelectCellType";
+import { CellTypeKeys } from "./components/tools/SelectCellType";
 import { Tool, Toolbar } from "./components/tools/Toolbar";
 
 function App() {
@@ -21,8 +19,8 @@ function App() {
   );
 
   const handleSelectCellType = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      setCellType(e.target.value as CellTypeKeys);
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      setCellType(e.currentTarget.value as CellTypeKeys);
     },
     []
   );

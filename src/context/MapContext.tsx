@@ -1,17 +1,7 @@
 import { createContext, ReactElement, ReactNode, useContext } from "react";
 import { initState, useMap, UseMapType } from "./useMap";
 
-const initContextState: UseMapType = {
-  // TODO might be a mess
-  newMap: () => void {},
-  state: initState,
-  updateMap: () => void {},
-  undo: () => void {},
-  redo: () => void {},
-  rename: () => void {},
-};
-
-export const MapContext = createContext<UseMapType>(initContextState);
+export const MapContext = createContext<UseMapType>(null);
 
 type ChildrenType = {
   children: ReactNode;
